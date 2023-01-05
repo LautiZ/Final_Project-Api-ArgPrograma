@@ -1,6 +1,8 @@
 package com.cursojava.project.controllers;
 
+import com.cursojava.project.models.Domicilio;
 import com.cursojava.project.models.Usuario;
+import com.cursojava.project.repositories.DomicilioRepository;
 import com.cursojava.project.repositories.UsuarioRepository;
 
 import com.cursojava.project.utils.JWTUtil;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @RestController
 public class UsuarioController {
@@ -22,6 +23,9 @@ public class UsuarioController {
 
     @Autowired
     private JWTUtil jwtUtil;
+
+    @Autowired
+    private DomicilioRepository domicilioRepository;
 
     // Ruta de prueba
     @RequestMapping(value = "prueba")
@@ -41,8 +45,13 @@ public class UsuarioController {
     }
 
     private boolean validarToken(String token) {
-        String idUsuario = jwtUtil.getKey(token);
-        return idUsuario != null;
+
+        try {
+            String idUsuario = jwtUtil.getKey(token);
+            return idUsuario != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // Ruta para editar un usuario
@@ -74,6 +83,40 @@ public class UsuarioController {
 
             usuarioRepository.save(updatedUsuario);
             return updatedUsuario;
+        }
+
+    }
+
+    // Editar domicilio de un usuario
+    @PutMapping(value = "usuario/edit/domicilio")
+    public Usuario editUserDomicilio(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Domicilio domicilio) {
+        if (!validarToken(token)) {
+            return null;
+        } else {
+            String id = jwtUtil.getKey(token);
+            Long idLong = Long.parseLong(id);
+
+            Usuario user = usuarioRepository.findById(idLong).get();
+
+            Long domicilioID = user.getDomicilio().getDomicilioId();
+            Domicilio updatedDomicilio = domicilioRepository.findById(domicilioID).get();
+
+            if (domicilio.getCity() != "") {
+                updatedDomicilio.setCity(domicilio.getCity());
+            }
+            if (domicilio.getAddress() != "") {
+                updatedDomicilio.setAddress(domicilio.getAddress());
+            }
+            if (domicilio.getCountry() != "") {
+                updatedDomicilio.setCountry(domicilio.getCountry());
+            }
+            if (domicilio.getProvince() != "") {
+                updatedDomicilio.setProvince(domicilio.getProvince());
+            }
+
+
+            domicilioRepository.save(updatedDomicilio);
+            return user;
         }
 
     }
