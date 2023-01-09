@@ -1,7 +1,9 @@
 package com.cursojava.project.controllers;
 
+import com.cursojava.project.models.Aboutme;
 import com.cursojava.project.models.Domicilio;
 import com.cursojava.project.models.Usuario;
+import com.cursojava.project.repositories.AboutmeRepository;
 import com.cursojava.project.repositories.DomicilioRepository;
 import com.cursojava.project.repositories.UsuarioRepository;
 
@@ -22,10 +24,13 @@ public class UsuarioController {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private JWTUtil jwtUtil;
+    private DomicilioRepository domicilioRepository;
 
     @Autowired
-    private DomicilioRepository domicilioRepository;
+    private AboutmeRepository aboutmeRepository;
+
+    @Autowired
+    private JWTUtil jwtUtil;
 
     // Ruta de prueba
     @RequestMapping(value = "prueba")
@@ -145,5 +150,32 @@ public class UsuarioController {
     @GetMapping(value = "usuario/search/{id}")
     public Usuario findUser(@PathVariable Long id) {
         return usuarioRepository.findById(id).get();
+    }
+
+    // Modificar seccion about me
+    @PutMapping(value = "usuario/edit/aboutme")
+    public Usuario editUserAboutme(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Aboutme aboutme) {
+        if (!validarToken(token)) {
+            return null;
+        } else {
+            String id = jwtUtil.getKey(token);
+            Long idLong = Long.parseLong(id);
+
+            Usuario user = usuarioRepository.findById(idLong).get();
+
+            Long aboutmeID = user.getAboutme().getAboutmeId();
+            Aboutme updatedAboutme = aboutmeRepository.findById(aboutmeID).get();
+
+            if (aboutme.getText() != "") {
+                updatedAboutme.setText(aboutme.getText());
+            }
+            if (aboutme.getLinklinkedin() != "") {
+                updatedAboutme.setLinklinkedin(aboutme.getLinklinkedin());
+            }
+
+            aboutmeRepository.save(updatedAboutme);
+            return user;
+        }
+
     }
 }

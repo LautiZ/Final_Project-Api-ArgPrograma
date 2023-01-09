@@ -48,11 +48,23 @@ public class Usuario {
     @JoinColumn(name = "fk_domicilio_id")
     private Domicilio domicilio;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "fk_aboutme_id")
+    private Aboutme aboutme;
+
     public Domicilio getDomicilio() {
         return domicilio;
     }
 
     public void setDomicilio(Domicilio domicilio) {
         this.domicilio = domicilio;
+    }
+
+    public Aboutme getAboutme() {
+        return aboutme;
+    }
+
+    public void setAboutme(Aboutme aboutme) {
+        this.aboutme = aboutme;
     }
 }
