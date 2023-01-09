@@ -13,6 +13,12 @@ public class Aboutme {
     @Column(name = "aboutme_id")
     private Long aboutmeId;
 
+    /* Agregar imagen a futuro
+    @Getter @Setter
+    @Column(name = "image")
+    private String image;
+     */
+
     @Getter @Setter
     @Column(name = "text", columnDefinition="TEXT")
     private String text;

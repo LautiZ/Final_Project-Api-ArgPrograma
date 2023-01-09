@@ -152,7 +152,7 @@ public class UsuarioController {
         return usuarioRepository.findById(id).get();
     }
 
-    // Modificar seccion about me
+    // Modificar informacion seccion about me
     @PutMapping(value = "usuario/edit/aboutme")
     public Usuario editUserAboutme(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Aboutme aboutme) {
         if (!validarToken(token)) {
@@ -178,4 +178,38 @@ public class UsuarioController {
         }
 
     }
+
+    /* Para agregar una imagen a futuro
+    @PutMapping(value = "usuario/edit/aboutme/image")
+    public Usuario editUserAboutme(@RequestHeader(value = "Authorization") String token, @RequestParam MultipartFile image) {
+        if (!validarToken(token)) {
+            return null;
+        } else {
+            String id = jwtUtil.getKey(token);
+            Long idLong = Long.parseLong(id);
+
+            Usuario user = usuarioRepository.findById(idLong).get();
+
+            Long aboutmeID = user.getAboutme().getAboutmeId();
+            Aboutme updatedAboutme = aboutmeRepository.findById(aboutmeID).get();
+
+            if (!image.isEmpty()){
+                Path imageDirectory = Paths.get("src//main//resources//static/images");
+                String absolutePath = imageDirectory.toFile().getAbsolutePath();
+
+                try {
+                    byte[] bytesImg = image.getBytes();
+                    Path completePath = Paths.get(absolutePath + "//" + image.getOriginalFilename());
+                    Files.write(completePath, bytesImg);
+
+                    updatedAboutme.setImage(image.getOriginalFilename());
+                    aboutmeRepository.save(updatedAboutme);
+
+                } catch (IOException e) {
+                    return null;
+                }
+            }
+            return user;
+        }
+    } */
 }
