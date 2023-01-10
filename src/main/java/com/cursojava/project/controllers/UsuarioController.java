@@ -1,11 +1,7 @@
 package com.cursojava.project.controllers;
 
-import com.cursojava.project.models.Aboutme;
-import com.cursojava.project.models.Domicilio;
-import com.cursojava.project.models.Usuario;
-import com.cursojava.project.repositories.AboutmeRepository;
-import com.cursojava.project.repositories.DomicilioRepository;
-import com.cursojava.project.repositories.UsuarioRepository;
+import com.cursojava.project.models.*;
+import com.cursojava.project.repositories.*;
 
 import com.cursojava.project.utils.JWTUtil;
 import de.mkammerer.argon2.Argon2;
@@ -30,6 +26,12 @@ public class UsuarioController {
     private AboutmeRepository aboutmeRepository;
 
     @Autowired
+    private ProjectsRepository projectsRepository;
+
+    @Autowired
+    private EducationRepository educationRepository;
+
+    @Autowired
     private JWTUtil jwtUtil;
 
     // Ruta de prueba
@@ -49,6 +51,7 @@ public class UsuarioController {
         return usuarioRepository.findAll();
     }
 
+    // Funcion para validar el token de usuario
     private boolean validarToken(String token) {
 
         try {
@@ -92,8 +95,8 @@ public class UsuarioController {
 
     }
 
-    // Editar domicilio de un usuario
-    @PutMapping(value = "usuario/edit/domicilio")
+    // Ruta para editar domicilio de un usuario
+    @PatchMapping(value = "usuario/edit/domicilio")
     public Usuario editUserDomicilio(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Domicilio domicilio) {
         if (!validarToken(token)) {
             return null;
@@ -152,8 +155,8 @@ public class UsuarioController {
         return usuarioRepository.findById(id).get();
     }
 
-    // Modificar informacion seccion about me
-    @PutMapping(value = "usuario/edit/aboutme")
+    // Ruta para modificar informacion seccion about me
+    @PatchMapping(value = "usuario/edit/aboutme")
     public Usuario editUserAboutme(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Aboutme aboutme) {
         if (!validarToken(token)) {
             return null;
@@ -179,9 +182,9 @@ public class UsuarioController {
 
     }
 
-    /* Para agregar una imagen a futuro
-    @PutMapping(value = "usuario/edit/aboutme/image")
-    public Usuario editUserAboutme(@RequestHeader(value = "Authorization") String token, @RequestParam MultipartFile image) {
+    // Ruta para editar algun proyecto
+    @PatchMapping(value = "usuario/edit/project/{idProject}")
+    public Projects editUserProject(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Projects projects, @PathVariable Long idProject) {
         if (!validarToken(token)) {
             return null;
         } else {
@@ -190,26 +193,117 @@ public class UsuarioController {
 
             Usuario user = usuarioRepository.findById(idLong).get();
 
-            Long aboutmeID = user.getAboutme().getAboutmeId();
-            Aboutme updatedAboutme = aboutmeRepository.findById(aboutmeID).get();
+            // List<Projects> projectsList = user.getProjectsList();
 
-            if (!image.isEmpty()){
-                Path imageDirectory = Paths.get("src//main//resources//static/images");
-                String absolutePath = imageDirectory.toFile().getAbsolutePath();
+            try {
+                Projects editedProject = projectsRepository.findById(idProject).get();
 
-                try {
-                    byte[] bytesImg = image.getBytes();
-                    Path completePath = Paths.get(absolutePath + "//" + image.getOriginalFilename());
-                    Files.write(completePath, bytesImg);
-
-                    updatedAboutme.setImage(image.getOriginalFilename());
-                    aboutmeRepository.save(updatedAboutme);
-
-                } catch (IOException e) {
-                    return null;
+                if (editedProject.getUser().getId() == user.getId()){
+                    if (projects.getTitle() != "") {
+                        editedProject.setTitle(projects.getTitle());
+                    }
+                    if (projects.getText() != "") {
+                        editedProject.setText(projects.getText());
+                    }
+                    if (projects.getLink() != "") {
+                        editedProject.setLink(projects.getLink());
+                    }
+                    projectsRepository.save(editedProject);
+                    return editedProject;
                 }
+                return null;
+            } catch (Exception e) {
+                return null;
             }
+        }
+    }
+
+    // Ruta para agregar proyectos al usuario
+    @PutMapping(value = "usuario/create/project")
+    public Usuario createUserProject(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Projects project) {
+        if (!validarToken(token)) {
+            return null;
+        } else {
+            String id = jwtUtil.getKey(token);
+            Long idLong = Long.parseLong(id);
+
+            Usuario user = usuarioRepository.findById(idLong).get();
+            List<Projects> listaProjects = user.getProjectsList();
+
+            project.setUser(user);
+
+            projectsRepository.save(project);
+
+            listaProjects.add(project);
+
+            user.setProjectsList(listaProjects);
+
+            usuarioRepository.save(user);
             return user;
         }
-    } */
+    }
+
+    // Ruta para editar un curso
+    @PatchMapping(value = "usuario/edit/education/{idEducation}")
+    public Education editUserEducation(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Education education, @PathVariable Long idEducation) {
+        if (!validarToken(token)) {
+            return null;
+        } else {
+            String id = jwtUtil.getKey(token);
+            Long idLong = Long.parseLong(id);
+
+            Usuario user = usuarioRepository.findById(idLong).get();
+
+            // List<Education> educationList = user.getEducationList();
+
+            try {
+                Education editedEducation = educationRepository.findById(idEducation).get();
+
+                if (editedEducation.getUser().getId() == user.getId()) {
+                    if (education.getTitle() != "") {
+                        editedEducation.setTitle(education.getTitle());
+                    }
+                    if (education.getText() != "") {
+                        editedEducation.setText(education.getText());
+                    }
+                    if (education.getSubtitle() != "") {
+                        editedEducation.setSubtitle(education.getSubtitle());
+                    }
+                    if (education.getDate() != "") {
+                        editedEducation.setDate(education.getDate());
+                    }
+                    educationRepository.save(editedEducation);
+                    return editedEducation;
+                }
+                return null;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+
+    // Ruta para agregar cursos al usuario
+    @PutMapping(value = "usuario/create/education")
+    public Usuario createUserEducation(@RequestHeader(value = "Authorization") String token, @RequestBody @NotNull Education education) {
+        if (!validarToken(token)) {
+            return null;
+        } else {
+            String id = jwtUtil.getKey(token);
+            Long idLong = Long.parseLong(id);
+
+            Usuario user = usuarioRepository.findById(idLong).get();
+            List<Education> listaEducations = user.getEducationList();
+
+            education.setUser(user);
+
+            educationRepository.save(education);
+
+            listaEducations.add(education);
+
+            user.setEducationList(listaEducations);
+
+            usuarioRepository.save(user);
+            return user;
+        }
+    }
 }

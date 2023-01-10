@@ -9,15 +9,9 @@ import lombok.Setter;
 public class Aboutme {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter @Setter
+    @Getter
     @Column(name = "aboutme_id")
     private Long aboutmeId;
-
-    /* Agregar imagen a futuro
-    @Getter @Setter
-    @Column(name = "image")
-    private String image;
-     */
 
     @Getter @Setter
     @Column(name = "text", columnDefinition="TEXT")

@@ -1,17 +1,20 @@
 package com.cursojava.project.models;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Entity
 @Table(name = "usuario")
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter @Setter
+    @Getter
     @Column(name = "id")
     private Long id;
 
@@ -52,6 +55,16 @@ public class Usuario {
     @JoinColumn(name = "fk_aboutme_id")
     private Aboutme aboutme;
 
+    @JsonManagedReference
+    @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "user")
+    @Getter @Setter
+    private List<Projects> projectsList;
+
+    @JsonManagedReference
+    @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "user")
+    @Getter @Setter
+    private List<Education> educationList;
+
     public Domicilio getDomicilio() {
         return domicilio;
     }
@@ -67,4 +80,5 @@ public class Usuario {
     public void setAboutme(Aboutme aboutme) {
         this.aboutme = aboutme;
     }
+
 }

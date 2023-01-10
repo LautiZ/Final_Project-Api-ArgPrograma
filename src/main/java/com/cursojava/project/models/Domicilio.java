@@ -9,7 +9,7 @@ import lombok.Setter;
 public class Domicilio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter @Setter
+    @Getter
     @Column(name = "domicilio_id")
     private Long domicilioId;
 
